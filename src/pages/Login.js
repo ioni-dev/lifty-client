@@ -1,29 +1,32 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm, Controller } from "react-hook-form";
-import ImageLight from '../assets/img/login-office.jpeg'
-import ImageDark from '../assets/img/login-office-dark.jpeg'
-import { GithubIcon, TwitterIcon } from '../icons'
 import { Label, Input, Button } from '@windmill/react-ui'
 import login from '../assets/img/login.svg'
 import ky from 'ky'
 import { useHistory } from "react-router-dom";
+import NotyfContext from './../context/NotyfContext';
 
 
 
 function Login() {
-    const { register, handleSubmit, errors, control } = useForm({mode: "onBlur"});
-    let history = useHistory();
+  const notyf = useContext(NotyfContext);
+  const { register, handleSubmit, errors, control } = useForm({mode: "onBlur"});
+  let history = useHistory();
   const onSubmit = async (data) => {
-    console.log(data)
-    const res =  await ky.post('http://localhost:4000/api/auth/identity/callback',  {json: {user: data, type: 'organization' }}).json();
-    console.log(res)
-    localStorage.setItem("token", res.token)
-    localStorage.setItem("organizationId", res.id)
-    res && history.push('/app/drivers')
+    try {
+      const res =  await ky.post('http://localhost:4000/api/auth/identity/callback',  {json: {user: data, type: 'organization' }}).json();
+      console.log(res)
+      localStorage.setItem("token", res.token)
+      localStorage.setItem("organizationId", res.id)
+      res && history.push('/app/drivers')
+    } catch (error) {
+      notyf.error('Email o password no coinciden')
+      console.log('check', error)
+    }
+
   };
 
-  
   return (
     <div className="flex items-center min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
       <div className="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl dark:bg-gray-800">
