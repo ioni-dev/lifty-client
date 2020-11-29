@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm, Controller } from "react-hook-form";
 
@@ -10,6 +10,8 @@ import 'react-phone-input-2/lib/style.css'
 import { Select } from '@windmill/react-ui'
 import ky from 'ky'
 import { useHistory } from "react-router-dom";
+import { HelperText } from '@windmill/react-ui'
+import delivery from '../assets/img/delivery.svg'
 
 
 
@@ -17,13 +19,16 @@ import { useHistory } from "react-router-dom";
 
 function CreateAccount() {
   let history = useHistory();
-  const { register, handleSubmit, errors, control } = useForm({mode: "onBlur"});
+  const { register, handleSubmit, errors, control, watch } = useForm({mode: "onBlur"});
+  const password = useRef({});
+  password.current = watch("password", "");
+
   const onSubmit = async (data) => {
     const res =  await ky.post('http://localhost:4000/api/organizations',  {json: {organization: data}});
     res.ok && history.push('/mail-confirmation')
     // return res.json();
   };
-  
+
 
   return (
     <div className="flex items-center min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
@@ -33,7 +38,7 @@ function CreateAccount() {
             <img
               aria-hidden="true"
               className="object-cover w-full h-full dark:hidden"
-              src={ImageLight}
+              src={delivery}
               alt="Office"
             />
             <img
@@ -67,9 +72,9 @@ function CreateAccount() {
                 })} />
               </Label>
                 {errors.full_name && (
-                <span className={` mandatory`}>
+                <HelperText valid={false}>
                   {errors.full_name.message}
-                </span>
+                </HelperText>
               )}
                <Label>
                 <span>Organization Name</span>
@@ -90,11 +95,11 @@ function CreateAccount() {
                 })} />
               </Label>
                 {errors.organization_name && (
-                <span className={` mandatory`}>
+                <HelperText valid={false}>
                   {errors.organization_name.message}
-                </span>
+                </HelperText>
               )}
-                   <Label>
+              <Label>
                 <span>Country</span>
                   <Select className="mt-1" name="country"  ref={register({
                     required: {
@@ -106,9 +111,9 @@ function CreateAccount() {
                   </Select>
               </Label>
                 {errors.country && (
-                <span className={` mandatory`}>
+                <HelperText valid={false}>
                   {errors.country.message}
-                </span>
+                </HelperText>
               )}
               <Label>
                 <span>Email</span>
@@ -132,10 +137,10 @@ function CreateAccount() {
                     },
                 })} />
               </Label>
-                {errors.email && (
-                <span className={` mandatory`}>
+              {errors.email && (
+                <HelperText valid={false}>
                   {errors.email.message}
-                </span>
+                </HelperText>
               )}
               <Label>
                 <span>Mobile number</span>
@@ -160,11 +165,11 @@ function CreateAccount() {
                     )}
                     />
                 </Label>
-                {errors.mobileNumber && (
-                <span className={` mandatory`}>
-                  {errors.mobileNumber.message}
-                </span>
-              )}
+                {errors.cellphone && (
+                  <HelperText valid={false}>
+                    {errors.cellphone.message}
+                  </HelperText>
+                )}
               <Label className="mt-4">
                 <span>Password</span>
                 <Input className="mt-1" type="password" name="password"
@@ -183,24 +188,25 @@ function CreateAccount() {
                     },
                 })}/>
               </Label>
+              {errors.password && (
+                  <HelperText valid={false}>
+                    {errors.password.message}
+                  </HelperText>
+              )}
               <Label className="mt-4">
                 <span>Confirm password</span>
-                <Input className="mt-1" type="password" name="confirmPassword"
+                <Input className="mt-1" type="password" name="password_repeat"
                   ref={register({
-                    required: {
-                      value: true,
-                      message: "Please enter password",
-                    },
-                    minLength: {
-                      value: 6,
-                      message: "Minimum 6 characters are allowed",
-                    },
-                    maxLength: {
-                      value: 255,
-                      message: "Maximum 255 characters are allowed",
-                    },
-                })}/>
+                    validate: value =>
+                      value === password.current || "The passwords do not match"
+                  })}
+                />
               </Label>
+              {errors.password_repeat && (
+                  <HelperText valid={false}>
+                    {errors.password_repeat.message}
+                  </HelperText>
+              )}
               <Label className="mt-4">
                 <span>Vehicle quantity</span>
                 <Input className="mt-1" type="number" name="vehicule_quantity"
@@ -211,14 +217,27 @@ function CreateAccount() {
                     }
                 })}/>
               </Label>
-
+              {errors.vehicule_quantity && (
+                  <HelperText valid={false}>
+                    {errors.vehicule_quantity.message}
+                  </HelperText>
+              )}
               <Label className="mt-6" check>
-                <Input type="checkbox" />
+                <Input type="checkbox" name="agreedPrivacyPolicy" ref={register({
+                    required: {
+                      value: true,
+                      message: "Please accept the privacy policy"
+                    }
+                })}/>
                 <span className="ml-2">
                   I agree to the <span className="underline">privacy policy</span>
                 </span>
               </Label>
-
+              {errors.agreedPrivacyPolicy && (
+                  <HelperText valid={false}>
+                    {errors.agreedPrivacyPolicy.message}
+                  </HelperText>
+              )}
               {/* <Button tag={Link} to="/login" block className="mt-4"> */}
                <Button type="submit" block className="mt-4" disabled={useForm.isSubmitting}>
                 Create account

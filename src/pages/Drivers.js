@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 import { useForm, Controller } from "react-hook-form";
 import PhoneInput from 'react-phone-input-2'
@@ -11,7 +11,6 @@ import { AddPersonIcon, FilterIcon, SearchIcon } from '../icons'
 import ky from 'ky'
 import { useQuery } from 'react-query';
 import DriverForm from '../components/forms/driver/DriverForm'
-
 import response from '../utils/demo/tableData'
 import {
   TableBody,
@@ -51,7 +50,9 @@ function Drivers() {
 
   console.log(data)
 
-  const { register, handleSubmit, errors, control } = useForm({mode: "onBlur"});
+  const { register, handleSubmit, errors, control, watch } = useForm({mode: "onBlur"});
+  const password = useRef({});
+  password.current = watch("password", "");
     const onSubmit = async (formData) => {
       // formData['cellphone'] = "999898998998"
       formData['is_active'] = true
@@ -66,7 +67,7 @@ function Drivers() {
     // res.ok && history.push('/mail-confirmation')
     // return res.json();
   };
-  
+
   const [page, setPage] = useState(1)
   const [datas, setData] = useState([])
   // dropdown filter
@@ -134,11 +135,183 @@ function Drivers() {
           </Dropdown>
         </div>
         <div className="relative">
-          <Button onClick={openModal} className="bg-bitterSweet dark:bg-red-500"  aria-label="AddDriver" 
+          <Button onClick={openModal} className="bg-bitterSweet dark:bg-red-500"  aria-label="AddDriver"
             iconLeft={AddPersonIcon} >
             Add driver
           </Button>
-          <DriverForm />
+          <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate autoComplete="off">
+        <ModalBody>
+        <div className="leading-loose">
+
+            <p className="text-gray-800 font-medium">Driver Information</p>
+            <div className="">
+              <label className="block text-sm text-gray-00" htmlFor="firstName">First Name</label>
+              <input className="w-full px-5 py-1 text-gray-700 bg-gray-200 rounded" id="firstName" name="firstName" type="text"  placeholder="First Name" aria-label="Name" ref={register({
+                    required: {
+                      value: true,
+                      message: "Please enter your first name",
+                    },
+                    minLength: {
+                      value: 6,
+                      message: "Minimum 6 characters are allowed",
+                    },
+                    maxLength: {
+                      value: 255,
+                      message: "Maximum 255 characters are allowed",
+                    },
+                })}/>
+                {errors.firstName && (
+                <HelperText valid={false}>
+                  {errors.firstName.message}
+                </HelperText>
+              )}
+            </div>
+
+            <div className="">
+              <label className="block text-sm text-gray-00" htmlFor="lastName">Last Name</label>
+              <input className="w-full px-5 py-1 text-gray-700 bg-gray-200 rounded" id="lastName" name="lastName" type="text"  placeholder="Last Name" aria-label="Name" ref={register({
+                    required: {
+                      value: true,
+                      message: "Please enter last name",
+                    },
+                    minLength: {
+                      value: 6,
+                      message: "Minimum 6 characters are allowed",
+                    },
+                    maxLength: {
+                      value: 255,
+                      message: "Maximum 255 characters are allowed",
+                    },
+                })}/>
+                {errors.lastName && (
+                <HelperText valid={false}>
+                  {errors.lastName.message}
+                </HelperText>
+              )}
+            </div>
+
+            <div className="mt-2">
+              <label className="block text-sm text-gray-600" htmlFor="email">Email</label>
+              <input className="w-full px-5  py-4 text-gray-700 bg-gray-200 rounded" id="email" name="email" type="text" required=""
+                placeholder="The Email" aria-label="Email"  ref={register({
+                    required: {
+                      value: true,
+                      message: "Please enter the email address",
+                    },
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+                      message: "Enter a valid email address",
+                    },
+                    minLength: {
+                      value: 6,
+                      message: "Minimum 6 characters are allowed",
+                    },
+                    maxLength: {
+                      value: 255,
+                      message: "Maximum 255 characters are allowed",
+                    },
+                })}/>
+                 {errors.email && (
+                <HelperText valid={false}>
+                  {errors.email.message}
+                </HelperText>
+              )}
+            </div>
+            <div className="mt-2">
+              <label className=" block text-sm text-gray-600" htmlFor="cellphone">Mobile phone</label>
+              <Controller
+                  name="cellphone"
+                  control={control}
+                  defaultValue=""
+                  render={({ name, onBlur, onChange, value }) => (
+                    <PhoneInput
+                      name={name}
+                      value={value}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                      id="contactPhoneNumber"
+                      country={"uy"}
+                      style={{ width: "100%" }}
+                      label="Contacto telefónico"
+                      variant="outlined"
+                      margin="normal"
+                      error={Boolean(errors.phone)}
+                    />
+                    )}
+                    />
+                  {errors.cellphone && (
+                  <HelperText valid={false}>
+                    {errors.cellphone.message}
+                  </HelperText>
+                )}
+            </div>
+
+
+            <div className="mt-2">
+              <label className=" text-sm block text-gray-600" htmlFor="password">Password</label>
+              <Input className="mt-1" type="password" name="password"
+                  ref={register({
+                    required: {
+                      value: true,
+                      message: "Please enter password",
+                    },
+                    minLength: {
+                      value: 6,
+                      message: "Minimum 6 characters are allowed",
+                    },
+                    maxLength: {
+                      value: 255,
+                      message: "Maximum 255 characters are allowed",
+                    },
+                })}/>
+              {errors.password && (
+                  <HelperText valid={false}>
+                    {errors.password.message}
+                  </HelperText>
+              )}
+            </div>
+
+            <div className="inline-block mt-2 w-1/2 pr-1">
+              <label className=" block text-sm text-gray-600" htmlFor="password">Country</label>
+              <Input className="mt-1" type="password" name="password_repeat"
+                  ref={register({
+                    validate: value =>
+                      value === password.current || "The passwords do not match"
+                  })}
+                />
+
+              {errors.password_repeat && (
+                  <HelperText valid={false}>
+                    {errors.password_repeat.message}
+                  </HelperText>
+              )}
+            </div>
+            <div className="inline-block mt-2 -mx-1 pl-1 w-1/2">
+              <label className="hidden block text-sm text-gray-600" htmlFor="cus_email">Zip</label>
+              <input className="w-full px-2 py-2 text-gray-700 bg-gray-200 rounded" id="cus_email"  name="cus_email" type="text" required="" placeholder="Zip" aria-label="Email"/>
+            </div>
+            <p className="mt-4 text-gray-800 font-medium">Payment information</p>
+            <div className="">
+              <label className="block text-sm text-gray-600" htmlFor="cus_name">Card</label>
+              <input className="w-full px-2 py-2 text-gray-700 bg-gray-200 rounded" id="cus_name" name="cus_name" type="text" required="" placeholder="Card Number MM/YY CVC" aria-label="Name" />
+            </div>
+            <div className="mt-4">
+              <button className="px-4 py-1 text-white font-light tracking-wider bg-gray-900 rounded" type="submit">$3.00</button>
+            </div>
+        </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button className="w-full sm:w-auto" layout="outline" onClick={closeModal}>
+            Cancel
+          </Button>
+          <Button type="submit" block className="mt-4" disabled={useForm.isSubmitting}>
+            Create
+          </Button>
+        </ModalFooter>
+       </form>
+
+      </Modal>
         </div>
 
       </div>
